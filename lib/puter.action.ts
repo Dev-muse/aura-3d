@@ -1,0 +1,17 @@
+// implement all actions given by puter e.g sign in
+
+import puter from "@heyputer/puter.js";
+
+export const signIn = async () => await puter.auth.signIn();
+export const signOut = async () => puter.auth.signOut();
+
+
+export const getCurrentUser = async () => {
+  try {
+    return await puter.auth.getUser()
+
+  } catch (error) {
+   return null;
+    
+  }
+}

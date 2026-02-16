@@ -1,11 +1,24 @@
 import { Gem } from "lucide-react";
 import Button from "./ui/Button";
+import { useOutletContext } from "react-router";
 
 const Navbar = () => {
-  const isSignedIn = false;
-  const username = "Rahman";
-  const handleAuth = async () => {
-    
+  const { userName, signIn, signOut, isSignedIn } =
+    useOutletContext<AuthContext>();
+  const handleAuthClick = async () => {
+    if (isSignedIn) {
+      try {
+        await signOut();
+      } catch (error) {
+        console.error("puter signout failed", error);
+      }
+      return
+    }
+    try {
+      await signIn();
+    } catch (error) {
+      console.error(`Puter sign in failed ${error}`);
+    }
   };
   return (
     <header className="navbar">
@@ -26,13 +39,15 @@ const Navbar = () => {
           {isSignedIn ? (
             <>
               <span className="greeting">
-                {username ? `Hi ${username}` : "Signed In"}
+                {userName ? `Hi ${userName}` : "Signed In"}
               </span>
-                <Button size="sm" className="btn" onClick={handleAuth}>Log Out</Button>
+              <Button size="sm" className="btn" onClick={handleAuthClick}>
+                Log Out
+              </Button>
             </>
           ) : (
             <>
-              <Button onClick={handleAuth} size="sm" variant="ghost">
+              <Button onClick={handleAuthClick} size="sm" variant="ghost">
                 Log in
               </Button>
               <a href="#upload" className="cta">
