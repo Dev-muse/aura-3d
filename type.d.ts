@@ -5,7 +5,8 @@ userId: string | null;
 }
 
  interface AuthContext extends AuthState {
-  refreshAuth : ()=>Promise<boolean>;
-  signIn : ()=>Promise<boolean>;
-  signOut : ()=>Promise<boolean>;
+   refreshAuth : ()=>Promise<boolean>;
+   signIn : ()=>Promise<boolean>;
+   signOut : ()=>Promise<boolean>;
+   setImageData : (data: string)=>void;
  }
