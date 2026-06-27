@@ -1,5 +1,11 @@
 import { CheckCircle2, ImageIcon, UploadIcon } from "lucide-react";
-import React, { useState, useRef, useEffect, type DragEvent, type ChangeEvent } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  type DragEvent,
+  type ChangeEvent,
+} from "react";
 import { useOutletContext } from "react-router";
 import {
   PROGRESS_INCREMENT,
@@ -16,6 +22,7 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<null | string>(null);
   const { isSignedIn } = useOutletContext<AuthContext>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const intervalRef = useRef<number | null>(null);
@@ -80,20 +87,24 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
   };
 
   const MAX_FILE_SIZE = 50 * 1024 * 1024;
-  const ALLOWED_TYPES = ["image/jpeg", "image/png","image/jpg"];
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 
   const processFile = (fileToProcess: File) => {
     if (!isSignedIn) {
       return;
     }
+    setError(null);
 
     if (!ALLOWED_TYPES.includes(fileToProcess.type)) {
-      console.error("Invalid file type. Only JPEG and PNG are allowed.");
+      setError("Only JPEG, JPG and PNG files are allowed.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     if (fileToProcess.size > MAX_FILE_SIZE) {
-      console.error("File size exceeds 50MB limit.");
+      setError("File size exceeds the upload limit.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
       return;
     }
 
@@ -105,7 +116,7 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
       setFile(null);
       setProgress(0);
       console.error("Error reading file:", error);
-    }; 
+    };
     reader.onload = (event) => {
       const base64String = event.target?.result as string;
 
@@ -171,6 +182,7 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
                 : "Sign in or sign up with Puter to upload "}
             </p>
             <p className="help">Maximum file size 50MB.</p>
+             {error && <p className="help error">{error}</p>}
           </div>
         </div>
       ) : (
