@@ -79,8 +79,21 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
     }
   };
 
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
+  const ALLOWED_TYPES = ["image/jpeg", "image/png","image/jpg"];
+
   const processFile = (fileToProcess: File) => {
     if (!isSignedIn) {
+      return;
+    }
+
+    if (!ALLOWED_TYPES.includes(fileToProcess.type)) {
+      console.error("Invalid file type. Only JPEG and PNG are allowed.");
+      return;
+    }
+
+    if (fileToProcess.size > MAX_FILE_SIZE) {
+      console.error("File size exceeds 50MB limit.");
       return;
     }
 
@@ -88,6 +101,11 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
     setProgress(0);
 
     const reader = new FileReader();
+    reader.onerror = (error) => {
+      setFile(null);
+      setProgress(0);
+      console.error("Error reading file:", error);
+    }; 
     reader.onload = (event) => {
       const base64String = event.target?.result as string;
 
