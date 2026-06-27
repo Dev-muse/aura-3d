@@ -2,6 +2,9 @@ import Navbar from "components/Navbar";
 import type { Route } from "./+types/home";
 import { ArrowRight, ArrowUpRight, Clock, Layers } from "lucide-react";
 import Button from "components/ui/Button";
+import Upload from "components/Upload";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,6 +14,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const [imageData, setImageData] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const handleUploadComplete = (base64Image: string) => {
+    const newId = crypto.randomUUID();
+    navigate(`/visualizer/${newId}`);
+    return true;
+  };
   return (
     <div className="home">
       <Navbar />
@@ -45,7 +55,10 @@ export default function Home() {
               <h3>Upload your design</h3>
               <p>Supports PNG,JPG, formats up to 200MB</p>
             </div>
-            <p>Upload Images</p>
+            <Upload
+              onComplete={handleUploadComplete}
+              setImageData={setImageData}
+            />
           </div>
         </div>
       </section>
@@ -73,7 +86,13 @@ export default function Home() {
                   <h3>Project Gemstone</h3>
                   <div className="meta">
                     <Clock size={12} />
-                    <span>{new Date("01.01.2027").toLocaleDateString()}</span>
+                    <span>
+                      {new Date("2027-01-01").toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                      })}
+                    </span>
                     <span>By dinamex</span>
                   </div>
                 </div>
