@@ -1,5 +1,5 @@
 import { CheckCircle2, ImageIcon, UploadIcon } from "lucide-react";
-import React, { useState, useRef, type DragEvent, type ChangeEvent } from "react";
+import React, { useState, useRef, useEffect, type DragEvent, type ChangeEvent } from "react";
 import { useOutletContext } from "react-router";
 import {
   PROGRESS_INCREMENT,
@@ -19,6 +19,20 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
   const { isSignedIn } = useOutletContext<AuthContext>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const intervalRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -66,7 +80,6 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
   };
 
   const processFile = (fileToProcess: File) => {
-    // Block upload if not signed in
     if (!isSignedIn) {
       return;
     }
@@ -74,32 +87,28 @@ const Upload: React.FC<UploadProps> = ({ setImageData, onComplete }) => {
     setFile(fileToProcess);
     setProgress(0);
 
-    // Use FileReader to get Base64 string
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64String = event.target?.result as string;
 
-      // Use setInterval to increment progress using constants
       intervalRef.current = window.setInterval(() => {
         setProgress((prevProgress) => {
           const newProgress = prevProgress + PROGRESS_INCREMENT;
-          
+
           if (newProgress >= 100) {
-            // Clear the interval when progress reaches 100
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
               intervalRef.current = null;
             }
 
-            // Call onComplete (setImageData) with the Base64 data after REDIRECT_DELAY_MS delay
-            setTimeout(() => {
+            timeoutRef.current = window.setTimeout(() => {
               setImageData(base64String);
-            if (onComplete) onComplete(base64String);
+              if (onComplete) onComplete(base64String);
             }, REDIRECT_DELAY_MS);
 
             return 100;
           }
-          
+
           return newProgress;
         });
       }, PROGRESS_INTERVAL_MS);
